@@ -21,6 +21,59 @@
         </div>
       </section>
 
+      <section id="customer-list-container">
+        <h3>Customers</h3>
+        <button id="refresh-customers">Refresh Customers</button>
+        <div id="customer-list">
+          <p>Loading customers...</p>
+        </div>
+      </section>
+
+
+      <section id="customer-container">
+        <h3>Create Customer</h3>
+        <form id="customer-form">
+          <div class="form-group">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" required />
+          </div>
+          <div class="form-group">
+            <label for="middle_name">Middle Name:</label>
+            <input type="text" id="middle_name" />
+          </div>
+          <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" required />
+          </div>
+          <div class="form-group">
+            <label for="dob">DOB:</label>
+            <input type="date" id="dob" required />
+          </div>
+          <div class="form-group">
+            <label for="address_line_1">Address Line 1:</label>
+            <input type="text" id="address_line_1" required />
+          </div>
+          <div class="form-group">
+            <label for="zip_code">Zip Code:</label>
+            <input type="text" id="zip_code" required />
+          </div>
+          <div class="form-group">
+            <label for="city">City:</label>
+            <input type="text" id="city" required />
+          </div>
+          <div class="form-group">
+            <label for="state">State:</label>
+            <input type="text" id="state" required />
+          </div>
+          <div class="form-group">
+            <label for="country">Country:</label>
+            <input type="text" id="country" required />
+          </div>
+          <button type="submit">Create Customer</button>
+        </form>
+        <div id="customer-message" class="hidden"></div>
+      </section>
+
       <section id="signup-container">
         <h3>Sign Up for an Activity</h3>
         <form id="signup-form">

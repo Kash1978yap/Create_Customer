@@ -5,7 +5,11 @@ A super simple FastAPI application that allows students to view and sign up
 for extracurricular activities at Mergington High School.
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel, Field
+from typing import List
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
@@ -42,6 +46,54 @@ activities = {
 }
 
 
+# SQLite + SQLAlchemy setup for customers persistence
+DATABASE_URL = "sqlite:///./customers.db"
+
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+
+class CustomerORM(Base):
+    __tablename__ = "customers"
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String, nullable=False)
+    middle_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=False)
+    dob = Column(String, nullable=False)
+    address_line_1 = Column(String, nullable=False)
+    zip_code = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    state = Column(String, nullable=False)
+    country = Column(String, nullable=False)
+
+
+class Customer(BaseModel):
+    first_name: str = Field(..., example="Jane")
+    middle_name: str | None = Field(None, example="A.")
+    last_name: str = Field(..., example="Doe")
+    dob: str = Field(..., example="2000-01-01")
+    address_line_1: str = Field(..., example="123 Main St")
+    zip_code: str = Field(..., example="12345")
+    city: str = Field(..., example="Anytown")
+    state: str = Field(..., example="CA")
+    country: str = Field(..., example="USA")
+
+    class Config:
+        orm_mode = True
+
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 @app.get("/")
 def root():
     return RedirectResponse(url="/static/index.html")
@@ -50,6 +102,23 @@ def root():
 @app.get("/activities")
 def get_activities():
     return activities
+
+
+@app.get("/customers")
+def get_customers(db: Session = Depends(get_db)):
+    """Return list of customers from SQLite"""
+    customers_db = db.query(CustomerORM).all()
+    return [Customer.from_orm(c) for c in customers_db]
+
+
+@app.post("/customers")
+def create_customer(customer: Customer, db: Session = Depends(get_db)):
+    """Create a new customer and persist to SQLite"""
+    db_customer = CustomerORM(**customer.dict())
+    db.add(db_customer)
+    db.commit()
+    db.refresh(db_customer)
+    return {"message": "Customer created", "customer": Customer.from_orm(db_customer)}
 
 
 @app.post("/activities/{activity_name}/signup")
