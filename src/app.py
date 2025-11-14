@@ -113,7 +113,23 @@ def get_customers(db: Session = Depends(get_db)):
 
 @app.post("/customers")
 def create_customer(customer: Customer, db: Session = Depends(get_db)):
-    """Create a new customer and persist to SQLite"""
+    """Create a new customer and persist to SQLite. Validate DOB ensures age >= 18."""
+    # Validate DOB format and age (expecting YYYY-MM-DD)
+    from datetime import date
+    try:
+        dob_date = date.fromisoformat(customer.dob)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid DOB format. Use YYYY-MM-DD")
+
+    today = date.today()
+    if dob_date > today:
+        raise HTTPException(status_code=400, detail="DOB cannot be in the future")
+
+    # Calculate age
+    age = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
+    if age < 18:
+        raise HTTPException(status_code=400, detail="Customer must be at least 18 years old")
+
     db_customer = CustomerORM(**customer.dict())
     db.add(db_customer)
     db.commit()

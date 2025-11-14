@@ -128,11 +128,39 @@ document.addEventListener("DOMContentLoaded", () => {
   customerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    // Client-side DOB -> age validation (expecting YYYY-MM-DD from date input)
+    const dobVal = document.getElementById("dob").value;
+    if (!dobVal) {
+      customerMessage.textContent = "Please provide DOB.";
+      customerMessage.className = "error";
+      customerMessage.classList.remove("hidden");
+      return;
+    }
+    const dobDate = new Date(dobVal + "T00:00:00");
+    const today = new Date();
+    if (dobDate > today) {
+      customerMessage.textContent = "DOB cannot be in the future.";
+      customerMessage.className = "error";
+      customerMessage.classList.remove("hidden");
+      return;
+    }
+    let age = today.getFullYear() - dobDate.getFullYear();
+    const m = today.getMonth() - dobDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      customerMessage.textContent = "Customer must be at least 18 years old.";
+      customerMessage.className = "error";
+      customerMessage.classList.remove("hidden");
+      return;
+    }
+
     const payload = {
       first_name: document.getElementById("first_name").value,
       middle_name: document.getElementById("middle_name").value || null,
       last_name: document.getElementById("last_name").value,
-      dob: document.getElementById("dob").value,
+      dob: dobVal,
       address_line_1: document.getElementById("address_line_1").value,
       zip_code: document.getElementById("zip_code").value,
       city: document.getElementById("city").value,
