@@ -134,7 +134,7 @@ def create_customer(customer: Customer, db: Session = Depends(get_db)):
     db.add(db_customer)
     db.commit()
     db.refresh(db_customer)
-    return {"message": "Customer created", "customer": Customer.from_orm(db_customer)}
+    return {"message": "New Customer created", "customer": Customer.from_orm(db_customer)}
 
 
 @app.post("/activities/{activity_name}/signup")
